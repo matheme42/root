@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:root/main.dart';
 import 'package:root/root.dart';
 
 import 'scaffold.dart';
 
-class Home extends StatefulWidget {
-  final _HomeState _state = _HomeState();
+class Home<T>extends StatefulWidget {
+  final _HomeState _state = _HomeState<T>();
 
   @override
   State<StatefulWidget> createState() => _state;
@@ -23,7 +24,7 @@ class Home extends StatefulWidget {
   }
 }
 
-class _HomeState extends State<Home>  with SingleTickerProviderStateMixin {
+class _HomeState <T>extends State<Home>  with SingleTickerProviderStateMixin {
   Widget _body;
   AppBar _appBar;
   Drawer _drawer;
@@ -49,7 +50,7 @@ class _HomeState extends State<Home>  with SingleTickerProviderStateMixin {
 
   @override
   void didChangeDependencies() {
-    Root root = context.findAncestorWidgetOfExactType<Root>();
+    Root root = context.findAncestorWidgetOfExactType<Root<T>>();
     _drawer = root?.drawer;
     _appBar = root?.appBar;
 
