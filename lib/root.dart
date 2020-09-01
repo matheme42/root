@@ -6,16 +6,22 @@ class Root extends StatelessWidget {
 
   static BuildContext get context => _context;
 
+  final String title;
   final Future<dynamic> Function() onLoading;
   final Widget onLoadingScreen;
   final Widget homeScreen;
-  final String title;
+  final AppBar appBar;
+  final Drawer drawer;
+
+
 
   Root({
     @required this.title,
     @required this.homeScreen,
     this.onLoading,
     this.onLoadingScreen,
+    this.appBar,
+    this.drawer,
   })  : assert(homeScreen != null),
         assert(title != null),
         assert((onLoading != null && onLoadingScreen != null) ||
@@ -25,8 +31,7 @@ class Root extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: title,
-      home: Scaffold(
-        body: Builder(builder: (context) {
+      home: Builder(builder: (context) {
           _context = context;
           return onLoading != null
               ? FutureBuilder(
@@ -40,7 +45,6 @@ class Root extends StatelessWidget {
                 )
               : Home();
         }),
-      ),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:root/root.dart';
 
+import 'scaffold.dart';
+
 class Home extends StatefulWidget {
   final _HomeState _state = _HomeState();
 
   @override
   State<StatefulWidget> createState() => _state;
 
-  Home();
+  set body (Widget body) => _state.body = body;
 
-  goTo(Widget child) => _state.goTo(child);
+  set appBar(AppBar appBar) => _state.appBar = appBar;
+
+  set drawer(Drawer drawer) => _state.drawer = drawer;
+
+  Home();
 
   factory Home.of(BuildContext context) {
     return context.findAncestorWidgetOfExactType();
@@ -19,12 +25,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Widget _body;
+  AppBar _appBar;
+  Drawer _drawer;
 
-  goTo(Widget child) {
-    setState(() {
-      _body = child;
-    });
-  }
+  set body(Widget body) => setState(() => _body = body);
+
+  set appBar(AppBar appBar) => setState(() => _appBar = appBar);
+
+  set drawer(Drawer drawer) => setState(() => _drawer = drawer);
 
   @override
   void initState() {
@@ -41,8 +49,10 @@ class _HomeState extends State<Home> {
 
   @override
   void didChangeDependencies() {
-    _body = context.findAncestorWidgetOfExactType<Root>().homeScreen;
-    _body ??= Container();
+    Root root = context.findAncestorWidgetOfExactType<Root>();
+    _body = root?.homeScreen;
+    _drawer = root?.drawer;
+    _appBar = root?.appBar;
     super.didChangeDependencies();
   }
 
@@ -53,17 +63,20 @@ class _HomeState extends State<Home> {
         child: _body,
         transitionBuilder: (child, animation) {
           return ScaleTransition(
-            scale: Tween<double>(
-              begin: 0.0,
-              end: 1.0,
-            ).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Curves.fastOutSlowIn,
+              scale: Tween<double>(
+                begin: 0.0,
+                end: 1.0,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.fastOutSlowIn,
+                ),
               ),
-            ),
-            child: child,
-          );
+              child: CustomScaffold(
+                body: child,
+                appBar: _appBar,
+                drawer: _drawer,
+              ));
         });
   }
 }
