@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:root/home.dart';
 
-class Root extends StatelessWidget {
+class Root <@required T>extends StatelessWidget {
   static BuildContext _context;
 
   static BuildContext get context => _context;
@@ -12,6 +13,7 @@ class Root extends StatelessWidget {
   final Widget homeScreen;
   final AppBar appBar;
   final Drawer drawer;
+  final T appContext;
 
   Root({
     @required this.title,
@@ -20,20 +22,25 @@ class Root extends StatelessWidget {
     this.onLoadingScreen,
     this.appBar,
     this.drawer,
+    this.appContext,
   })  : assert(homeScreen != null),
+        assert(appContext != null),
         assert(title != null),
         assert((onLoading != null && onLoadingScreen != null) ||
             (onLoadingScreen == null && onLoading == null));
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: title,
-      home: Builder(builder: (context) {
-        _context = context;
-        return Home();
-      }),
-      debugShowCheckedModeBanner: false,
+    return Provider<T>(
+      create: (_) => appContext,
+      child: MaterialApp(
+        title: title,
+        home: Builder(builder: (context) {
+          _context = context;
+          return Home();
+        }),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }
