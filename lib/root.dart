@@ -13,8 +13,6 @@ class Root extends StatelessWidget {
   final AppBar appBar;
   final Drawer drawer;
 
-
-
   Root({
     @required this.title,
     @required this.homeScreen,
@@ -32,19 +30,9 @@ class Root extends StatelessWidget {
     return MaterialApp(
       title: title,
       home: Builder(builder: (context) {
-          _context = context;
-          return onLoading != null
-              ? FutureBuilder(
-                  future: onLoading(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Home();
-                    }
-                    return onLoadingScreen;
-                  },
-                )
-              : Home();
-        }),
+        _context = context;
+        return Home();
+      }),
       debugShowCheckedModeBanner: false,
     );
   }

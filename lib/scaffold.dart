@@ -14,15 +14,11 @@ class CustomScaffold extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: appBar,
-        body: Stack(
-          children: [
-            Container(
+        body: Container(
               child: SingleChildScrollView(
                 child: Container(height: height, child: body),
               ),
             ),
-          ],
-        ),
         drawer: drawer,
       ),
     );

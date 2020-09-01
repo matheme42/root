@@ -23,7 +23,7 @@ class Home extends StatefulWidget {
   }
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home>  with SingleTickerProviderStateMixin {
   Widget _body;
   AppBar _appBar;
   Drawer _drawer;
@@ -50,9 +50,15 @@ class _HomeState extends State<Home> {
   @override
   void didChangeDependencies() {
     Root root = context.findAncestorWidgetOfExactType<Root>();
-    _body = root?.homeScreen;
     _drawer = root?.drawer;
     _appBar = root?.appBar;
+
+    if (root?.onLoading != null) {
+      _body = root.onLoadingScreen;
+      root.onLoading().then((_) => setState(() => _body = root.homeScreen));
+    } else {
+      _body = root?.homeScreen;
+    }
     super.didChangeDependencies();
   }
 
