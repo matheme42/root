@@ -15,10 +15,10 @@ class CustomScaffold extends StatelessWidget {
       child: Scaffold(
         appBar: appBar,
         body: Container(
-              child: SingleChildScrollView(
-                child: Container(height: height, child: body),
-              ),
-            ),
+          child: SingleChildScrollView(
+            child: Container(height: height, child: body),
+          ),
+        ),
         drawer: drawer,
       ),
     );
