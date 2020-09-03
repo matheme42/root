@@ -91,17 +91,17 @@ class HomeState<@required T extends AppContext> extends State<Home>
     return Builder(builder: (BuildContext context) {
       Home.context = context;
       return AnimatedSwitcher(
-          duration: Duration(seconds: 1),
+          duration: Duration(milliseconds: 200),
           child: _body,
           transitionBuilder: (child, animation) {
             return ScaleTransition(
                 scale: Tween<double>(
-                  begin: 0.0,
+                  begin: 0.98,
                   end: 1.0,
                 ).animate(
                   CurvedAnimation(
                     parent: animation,
-                    curve: Curves.fastOutSlowIn,
+                    curve: Curves.linear,
                   ),
                 ),
                 child: CustomScaffold(
