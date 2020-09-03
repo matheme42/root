@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:root/context.dart';
 import 'package:root/root.dart';
+
 import 'scaffold.dart';
 
 class Home<@required T extends AppContext> extends StatefulWidget {
@@ -17,7 +18,7 @@ class Home<@required T extends AppContext> extends StatefulWidget {
 }
 
 class HomeState<@required T extends AppContext> extends State<Home>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   Widget _body;
   AppBar _appBar;
   Drawer _drawer;
@@ -30,15 +31,15 @@ class HomeState<@required T extends AppContext> extends State<Home>
 
   @override
   void initState() {
-    SystemChrome.setEnabledSystemUIOverlays(
-        [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIOverlays(
         [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -47,6 +48,12 @@ class HomeState<@required T extends AppContext> extends State<Home>
     Root root = context.findAncestorWidgetOfExactType<Root<T>>();
     _drawer = root?.drawer;
     _appBar = root?.appBar;
+
+    KeyboardVisibility.onChange.listen((bool visible) {
+      if (visible == false) SystemChrome.setEnabledSystemUIOverlays([]);
+      if (root.appContext.onKeyBoardChange == null) return;
+      root.appContext.onKeyBoardChange(visible);
+    });
 
     if (root?.onLoading != null) {
       _body = root.onLoadingScreen;
@@ -59,6 +66,24 @@ class HomeState<@required T extends AppContext> extends State<Home>
       _body = root?.homeScreen;
     }
     super.didChangeDependencies();
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    Root root = context.findAncestorWidgetOfExactType<Root<T>>();
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        if (root.appContext.onTurnBackground == null) break;
+        root.appContext.onTurnBackground();
+        break;
+      case AppLifecycleState.resumed:
+        if (root.appContext.onTurnForeground == null) break;
+        root.appContext.onTurnForeground();
+        break;
+      case AppLifecycleState.paused:
+        break;
+    }
   }
 
   @override

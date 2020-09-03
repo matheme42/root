@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class CustomScaffold extends StatelessWidget {
   final Widget body;
@@ -16,7 +17,11 @@ class CustomScaffold extends StatelessWidget {
         appBar: appBar,
         body: Container(
           child: SingleChildScrollView(
-            child: Container(height: height, child: body),
+            child: Container(
+                height: height,
+                child: KeyboardDismissOnTap(
+                  child: body,
+                )),
           ),
         ),
         drawer: drawer,
