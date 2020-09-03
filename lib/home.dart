@@ -1,28 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:root/context.dart';
 import 'package:root/root.dart';
 import 'scaffold.dart';
 
-class Home extends StatefulWidget {
-  final _HomeState _state = _HomeState();
+class Home<@required T extends AppContext> extends StatefulWidget {
+  static BuildContext context;
 
   @override
-  State<StatefulWidget> createState() => _state;
+  State<StatefulWidget> createState() => HomeState<T>();
 
-  set body(Widget body) => _state.body = body;
-
-  set appBar(AppBar appBar) => _state.appBar = appBar;
-
-  set drawer(Drawer drawer) => _state.drawer = drawer;
-
-  Home();
-
-  factory Home.of(BuildContext context) {
-    return context.findAncestorWidgetOfExactType();
+  static HomeState get ofContext {
+    return context.findAncestorStateOfType<HomeState>();
   }
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
+class HomeState<@required T extends AppContext> extends State<Home>
+    with SingleTickerProviderStateMixin {
   Widget _body;
   AppBar _appBar;
   Drawer _drawer;
@@ -35,7 +30,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIOverlays(
+        [SystemUiOverlay.top, SystemUiOverlay.bottom]);
     super.initState();
   }
 
@@ -48,14 +44,18 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void didChangeDependencies() {
-    Root root = context.findAncestorWidgetOfExactType<Root>();
+    Root root = context.findAncestorWidgetOfExactType<Root<T>>();
     _drawer = root?.drawer;
     _appBar = root?.appBar;
 
     if (root?.onLoading != null) {
       _body = root.onLoadingScreen;
-      root.onLoading().then((_) => setState(() => _body = root.homeScreen));
+      root.onLoading().then((_) {
+        SystemChrome.setEnabledSystemUIOverlays([]);
+        body = root.homeScreen;
+      });
     } else {
+      SystemChrome.setEnabledSystemUIOverlays([]);
       _body = root?.homeScreen;
     }
     super.didChangeDependencies();
@@ -63,25 +63,28 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-        duration: Duration(seconds: 1),
-        child: _body,
-        transitionBuilder: (child, animation) {
-          return ScaleTransition(
-              scale: Tween<double>(
-                begin: 0.0,
-                end: 1.0,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.fastOutSlowIn,
+    return Builder(builder: (BuildContext context) {
+      Home.context = context;
+      return AnimatedSwitcher(
+          duration: Duration(seconds: 1),
+          child: _body,
+          transitionBuilder: (child, animation) {
+            return ScaleTransition(
+                scale: Tween<double>(
+                  begin: 0.0,
+                  end: 1.0,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.fastOutSlowIn,
+                  ),
                 ),
-              ),
-              child: CustomScaffold(
-                body: child,
-                appBar: _appBar,
-                drawer: _drawer,
-              ));
-        });
+                child: CustomScaffold(
+                  body: child,
+                  appBar: _appBar,
+                  drawer: _drawer,
+                ));
+          });
+    });
   }
 }
