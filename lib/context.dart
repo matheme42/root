@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 
 class AppContext extends ChangeNotifier {
-  Function(bool) onKeyBoardChange;
+  Function(bool)? onKeyBoardChange;
 
-  Function onTurnForeground;
+  Function? onTurnForeground;
 
-  Function onTurnBackground;
+  Function? onTurnBackground;
 }

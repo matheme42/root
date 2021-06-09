@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:root/home.dart';
-
 import 'context.dart';
 
 class Root<T extends AppContext> extends StatelessWidget {
-  static BuildContext _context;
+  static BuildContext? _context;
 
-  static BuildContext get context => _context;
+  static BuildContext? get context => _context;
 
   final String title;
-  final Future<dynamic> Function() onLoading;
-  final Widget onLoadingScreen;
+  final Future<dynamic> Function()? onLoading;
+  final Widget? onLoadingScreen;
   final Widget homeScreen;
-  final AppBar appBar;
-  final Drawer drawer;
+  final AppBar? appBar;
+  final Drawer? drawer;
+  final FloatingActionButton? floatingActionButton;
   final T appContext;
 
   Root(
-      {@required this.title,
-      @required this.homeScreen,
+      {
+      required this.title,
+      required this.homeScreen,
+      required this.appContext,
       this.onLoading,
       this.onLoadingScreen,
       this.appBar,
       this.drawer,
-      this.appContext})
-      : assert(homeScreen != null),
-        assert(title != null),
-        assert((onLoading != null && onLoadingScreen != null) ||
-            (onLoadingScreen == null && onLoading == null)),
-        assert(appContext != null);
+      this.floatingActionButton,
+      })
+      : assert((onLoading != null && onLoadingScreen != null) ||
+            (onLoadingScreen == null && onLoading == null));
 
   @override
   Widget build(BuildContext context) {
