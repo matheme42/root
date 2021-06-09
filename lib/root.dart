@@ -17,29 +17,28 @@ class Root<T extends AppContext> extends StatelessWidget {
   final FloatingActionButton? floatingActionButton;
   final T appContext;
 
-  Root(
-      {
-      required this.title,
-      required this.homeScreen,
-      required this.appContext,
-      this.onLoading,
-      this.onLoadingScreen,
-      this.appBar,
-      this.drawer,
-      this.floatingActionButton,
-      })
-      : assert((onLoading != null && onLoadingScreen != null) ||
+  Root({
+    required this.title,
+    required this.homeScreen,
+    required this.appContext,
+    this.onLoading,
+    this.onLoadingScreen,
+    this.appBar,
+    this.drawer,
+    this.floatingActionButton,
+  }) : assert((onLoading != null && onLoadingScreen != null) ||
             (onLoadingScreen == null && onLoading == null));
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: title,
-      home: Builder(builder: (context) {
-        _context = context;
-        return ChangeNotifierProvider(
-            create: (_) => appContext, child: Home<T>());
-      }),
+      home: ChangeNotifierProvider(
+          create: (_) => appContext,
+          child: Builder(builder: (context) {
+            _context = context;
+            return Home<T>();
+          })),
       debugShowCheckedModeBanner: false,
     );
   }
