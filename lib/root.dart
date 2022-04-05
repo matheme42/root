@@ -33,12 +33,14 @@ class Root<T extends AppContext> extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: title,
-      home: ChangeNotifierProvider(
-          create: (_) => appContext,
-          child: Builder(builder: (context) {
-            _context = context;
-            return Home<T>();
-          })),
+      home: ScaffoldMessenger(
+        child: ChangeNotifierProvider(
+            create: (_) => appContext,
+            child: Builder(builder: (context) {
+              _context = context;
+              return Home<T>();
+            })),
+      ),
       debugShowCheckedModeBanner: false,
     );
   }
