@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 
-class BaFodObserver extends StatefulWidget {
-  final Widget? child;
+class RootObserver extends StatefulWidget {
+  final Widget child;
   final Function? onTurnBackground;
   final Function? onTurnForeground;
   final Future<void> Function(BuildContext context)? onLoading;
   final Widget? onLoadingScreen;
   final Duration? onLoadingMinDuration;
 
-  const BaFodObserver(
+  const RootObserver(
       {Key? key,
-      this.child,
+      required this.child,
       this.onTurnBackground,
       this.onTurnForeground,
       this.onLoading,
@@ -23,35 +22,35 @@ class BaFodObserver extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return BaFodObserverState();
+    return RootObserverState();
   }
 }
 
-class BaFodObserverState extends State<BaFodObserver>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  late Widget homeWidget;
+class RootObserverState extends State<RootObserver>
+    with WidgetsBindingObserver {
+  bool loading = false;
+
+  Future<void> onLoading() async {
+    DateTime startLoading = DateTime.now().toUtc();
+    await widget.onLoading!(context);
+    while (DateTime.now().toUtc().difference(startLoading).inSeconds <
+        widget.onLoadingMinDuration!.inSeconds)
+      await Future.delayed(Duration(milliseconds: 100));
+  }
 
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive, overlays: []);
     if (widget.onLoading != null) {
-      homeWidget = widget.onLoadingScreen!;
-      widget.onLoading!(context).then((value) {
-        Future.delayed(widget.onLoadingMinDuration!).then((value) {
-          setState(() {
-            homeWidget = widget.child!;
-          });
+      loading = true;
+      onLoading().then((value) {
+        setState(() {
+          loading = false;
         });
       });
-    } else {
-      homeWidget = (widget.child != null ? widget.child : Container())!;
     }
-    super.didChangeDependencies();
+    super.initState();
   }
 
   @override
@@ -78,7 +77,23 @@ class BaFodObserverState extends State<BaFodObserver>
   }
 
   @override
-  Widget build(BuildContext context) => homeWidget;
+  void didChangeMetrics() {
+    if (MediaQuery.of(context).viewInsets.bottom != 0)
+      SystemChrome.restoreSystemUIOverlays();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        widget.child,
+        AnimatedSwitcher(
+          child: loading ? widget.onLoadingScreen : SizedBox.shrink(),
+          duration: Duration(seconds: 1, milliseconds: 500),
+        ),
+      ],
+    );
+  }
 }
 
 class Root<T extends ChangeNotifier> extends StatelessWidget {
@@ -93,14 +108,14 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
   final String initialRoute;
 
   /// internationalisation
-  final Iterable<Locale>? supportedLocales;
+  final Iterable<Locale> supportedLocales;
   final Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates;
   final Locale? locale;
 
   /// app initialisation
   final Future<void> Function(BuildContext context)? onLoading;
   final Widget? onLoadingScreen;
-  final Duration? onLoadingMinDuration;
+  final Duration onLoadingMinDuration;
 
   /// app state
   final Function(bool)? onKeyBoardChange;
@@ -109,9 +124,11 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
 
   ///debugger
   final bool debugShowCheckedModeBanner;
-  final bool? showPerformanceOverlay;
-  final bool? showSemanticsDebugger;
-  final bool? debugShowMaterialGrid;
+  final bool showPerformanceOverlay;
+  final bool showSemanticsDebugger;
+  final bool debugShowMaterialGrid;
+
+  final RouteFactory? onUnknownRoute;
 
   /// AppContext
   final T appContext;
@@ -125,40 +142,28 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
     required this.initialRoute,
     this.onLoading,
     this.onLoadingScreen,
-    this.onLoadingMinDuration,
+    this.onLoadingMinDuration = const Duration(seconds: 0),
     this.onKeyBoardChange,
     this.onTurnBackground,
     this.onTurnForeground,
-    this.supportedLocales,
+    this.supportedLocales = const <Locale>[Locale('en', 'US')],
     this.localizationsDelegates,
     this.locale,
-    required this.debugShowCheckedModeBanner,
-    this.showPerformanceOverlay,
-    this.showSemanticsDebugger,
-    this.debugShowMaterialGrid,
+    this.debugShowCheckedModeBanner = true,
+    this.showPerformanceOverlay = false,
+    this.showSemanticsDebugger = false,
+    this.debugShowMaterialGrid = false,
+    this.onUnknownRoute,
     required this.appContext,
-  });
+  }) : assert((onLoading != null && onLoadingScreen != null) ||
+            onLoading == null);
 
   static Root? ofContext(BuildContext context) {
     return context.findAncestorWidgetOfExactType<Root>();
   }
 
-  setDeviceOrientation(List<DeviceOrientation> deviceOrientation) {
-    SystemChrome.setPreferredOrientations(deviceOrientation);
-  }
-
   @override
   Widget build(BuildContext context) {
-    bool latestKeyboardVisible = false;
-
-    setDeviceOrientation([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.portraitUp
-    ]);
-
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive, overlays: []);
 
     return MaterialApp(
         title: title,
@@ -166,51 +171,39 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
         themeMode: themeMode,
         theme: theme,
         darkTheme: darkTheme,
-        showPerformanceOverlay:
-            showPerformanceOverlay == null ? false : showPerformanceOverlay!,
-        showSemanticsDebugger:
-            showSemanticsDebugger == null ? false : showSemanticsDebugger!,
-        debugShowMaterialGrid:
-            debugShowMaterialGrid == null ? false : debugShowMaterialGrid!,
-        supportedLocales: supportedLocales == null
-            ? [const Locale('en', 'US')].reversed
-            : supportedLocales!,
+        showPerformanceOverlay: showPerformanceOverlay,
+        showSemanticsDebugger: showSemanticsDebugger,
+        debugShowMaterialGrid: debugShowMaterialGrid,
+        supportedLocales: supportedLocales,
         localizationsDelegates: localizationsDelegates,
         initialRoute: initialRoute,
         locale: locale,
+        onUnknownRoute: onUnknownRoute,
         debugShowCheckedModeBanner: debugShowCheckedModeBanner,
         builder: (context, navigator) {
-          return ScaffoldMessenger(
-            child: KeyboardVisibilityBuilder(builder: (context, visible) {
-              if (onKeyBoardChange != null) {
-                onKeyBoardChange!(visible);
-              }
-              if (!visible && latestKeyboardVisible != visible) {
-                SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive,
-                    overlays: []);
-              }
-              latestKeyboardVisible = visible;
-              return KeyboardDismissOnTap(
-                  child: SafeArea(
-                      child: SingleChildScrollView(
-                          child: Container(
-                              height: MediaQuery.of(context).viewInsets.bottom +
-                                  MediaQuery.of(context).size.height +
-                                  MediaQuery.of(context).padding.top,
-                              child: Builder(builder: (context) {
-                                return ChangeNotifierProvider(
-                                    create: (context) => appContext,
-                                    child: BaFodObserver(
-                                      onTurnBackground: onTurnBackground,
-                                      onTurnForeground: onTurnForeground,
-                                      onLoadingScreen: onLoadingScreen,
-                                      onLoading: onLoading,
-                                      onLoadingMinDuration:
-                                          onLoadingMinDuration,
-                                      child: navigator!,
-                                    ));
-                              })))));
-            }),
+          MediaQueryData query = MediaQuery.of(context);
+          double height = query.viewInsets.bottom + query.size.height;
+          height += query.padding.top;
+          return MaterialButton(
+            onPressed: () {
+              Focus.of(context).unfocus();
+            },
+            padding: EdgeInsets.zero,
+            child: SafeArea(
+                child: SingleChildScrollView(
+              child: Container(
+                  height: height,
+                  child: ChangeNotifierProvider(
+                      create: (context) => appContext,
+                      child: RootObserver(
+                        onTurnBackground: onTurnBackground,
+                        onTurnForeground: onTurnForeground,
+                        onLoadingScreen: onLoadingScreen,
+                        onLoading: onLoading,
+                        onLoadingMinDuration: onLoadingMinDuration,
+                        child: navigator!,
+                      ))),
+            )),
           );
         });
   }

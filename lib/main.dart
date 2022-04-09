@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:root/root.dart';
-import 'package:provider/provider.dart';
+import 'dart:ui';
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:root/root.dart';
 
 Future<void> onLoading(BuildContext context) async {
   print(AppContext.ofContext(context));
@@ -19,15 +20,18 @@ void main() => runApp(Root(
       initialRoute: '/',
       appContext: AppContext(),
       onLoading: onLoading,
-      onLoadingScreen: Scaffold(
-        body: Container(
-          color: Colors.deepPurple,
-          child: FractionallySizedBox(
-            heightFactor: 1,
-            widthFactor: 1,
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Colors.red,
+      onLoadingScreen: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+        child: Container(
+          color: Colors.black.withOpacity(0.7),
+          child: Container(
+            child: FractionallySizedBox(
+              heightFactor: 1,
+              widthFactor: 1,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Colors.red,
+                ),
               ),
             ),
           ),
@@ -64,12 +68,13 @@ class HomeScreen extends StatelessWidget {
                     height: 50,
                     width: 50,
                     child: Container(
-                      color: Colors.indigo,
+                      color: Colors.orange,
                     ),
                   ),
                 ),
               )),
-              Flexible(child: TextField()),
+              Flexible(child: TextField(
+              )),
               Flexible(
                   child: MaterialButton(
                 onPressed: () {
