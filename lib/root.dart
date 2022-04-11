@@ -77,12 +77,6 @@ class RootObserverState extends State<RootObserver>
   }
 
   @override
-  void didChangeMetrics() {
-    if (MediaQuery.of(context).viewInsets.bottom != 0)
-      SystemChrome.restoreSystemUIOverlays();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
@@ -164,7 +158,6 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
         title: title,
         routes: routes,
@@ -183,10 +176,10 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
         builder: (context, navigator) {
           MediaQueryData query = MediaQuery.of(context);
           double height = query.viewInsets.bottom + query.size.height;
-          height += query.padding.top;
           return MaterialButton(
             onPressed: () {
               Focus.of(context).unfocus();
+              SystemChrome.restoreSystemUIOverlays();
             },
             padding: EdgeInsets.zero,
             child: SafeArea(
