@@ -123,6 +123,7 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
   final bool debugShowMaterialGrid;
 
   final RouteFactory? onUnknownRoute;
+  final RouteFactory? onGenerateRoute;
 
   /// AppContext
   final T appContext;
@@ -149,6 +150,7 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
     this.debugShowMaterialGrid = false,
     this.onUnknownRoute,
     required this.appContext,
+    this.onGenerateRoute,
   }) : assert((onLoading != null && onLoadingScreen != null) ||
             onLoading == null);
 
@@ -171,33 +173,35 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
         localizationsDelegates: localizationsDelegates,
         initialRoute: initialRoute,
         locale: locale,
+        onGenerateRoute: onGenerateRoute,
         onUnknownRoute: onUnknownRoute,
         debugShowCheckedModeBanner: debugShowCheckedModeBanner,
         builder: (context, navigator) {
           MediaQueryData query = MediaQuery.of(context);
           double height = query.viewInsets.bottom + query.size.height;
           return MaterialButton(
-            onPressed: () {
-              Focus.of(context).unfocus();
-              SystemChrome.restoreSystemUIOverlays();
-            },
-            padding: EdgeInsets.zero,
-            child: SafeArea(
+              onPressed: () {
+                Focus.of(context).unfocus();
+                SystemChrome.restoreSystemUIOverlays();
+              },
+              padding: EdgeInsets.zero,
+              child: SafeArea(
                 child: SingleChildScrollView(
-              child: Container(
-                  height: height,
-                  child: ChangeNotifierProvider(
-                      create: (context) => appContext,
-                      child: RootObserver(
-                        onTurnBackground: onTurnBackground,
-                        onTurnForeground: onTurnForeground,
-                        onLoadingScreen: onLoadingScreen,
-                        onLoading: onLoading,
-                        onLoadingMinDuration: onLoadingMinDuration,
-                        child: navigator!,
-                      ))),
-            )),
-          );
+                  physics: ClampingScrollPhysics(),
+                  child: Container(
+                      height: height,
+                      child: ChangeNotifierProvider(
+                          create: (context) => appContext,
+                          child: RootObserver(
+                            onTurnBackground: onTurnBackground,
+                            onTurnForeground: onTurnForeground,
+                            onLoadingScreen: onLoadingScreen,
+                            onLoading: onLoading,
+                            onLoadingMinDuration: onLoadingMinDuration,
+                            child: navigator!,
+                          ))),
+                ),
+              ));
         });
   }
 }
