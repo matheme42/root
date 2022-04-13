@@ -178,8 +178,9 @@ class Root<T extends ChangeNotifier> extends StatelessWidget {
         debugShowCheckedModeBanner: debugShowCheckedModeBanner,
         builder: (context, navigator) {
           MediaQueryData query = MediaQuery.of(context);
-          double height = query.viewInsets.bottom + query.size.height;
+          double height = query.viewInsets.bottom + query.size.height - query.padding.top;
           return MaterialButton(
+              splashColor: Colors.transparent,
               onPressed: () {
                 Focus.of(context).unfocus();
                 SystemChrome.restoreSystemUIOverlays();
